@@ -33,6 +33,7 @@ In the following example, we will provide steps to get started on creating your 
    ` .\mvnw.cmd clean install`
    2. To run the application after rebuilding, run the following command from the stylebi directory:  \
    `.\mvnw.cmd -o spring-boot:run -pl server`
+   3. The server will be available at http://localhost:8080/sree by default.
 4. The first step in creating a new Data Source is to create the listing for it in the User Portal > Data tab > Data Source > New Data Source listing.
 5. Create a new java package under [/connectors/inetsoft-rest/src/main/java/inetsoft/uql/rest/datasource](https://github.com/inetsoft-technology/stylebi/tree/main/connectors/inetsoft-rest/src/main/java/inetsoft/uql/rest/datasource) directory which will contain the relevant classes/methods for your new data source. For now, they can be skeleton classes which do not have any functionality.
    1. In the package, you will want to create a class for the DataSource, Endpoint, Endpoints, Listing, Query and Service functions which implement their respective abstract parent classes. For example, see the classes under the inetsoft.uql.rest.datasource.twitter package.
