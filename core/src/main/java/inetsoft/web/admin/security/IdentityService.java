@@ -29,6 +29,7 @@ import inetsoft.sree.RepletRegistry;
 import inetsoft.sree.SreeEnv;
 import inetsoft.sree.internal.DataCycleManager;
 import inetsoft.sree.internal.SUtil;
+import inetsoft.sree.internal.cluster.Cluster;
 import inetsoft.sree.portal.PortalThemesManager;
 import inetsoft.sree.schedule.*;
 import inetsoft.sree.security.IdentityID;
@@ -50,6 +51,7 @@ import inetsoft.util.css.CSSDictionary;
 import inetsoft.web.AutoSaveUtils;
 import inetsoft.web.RecycleBin;
 import inetsoft.web.admin.favorites.FavoriteList;
+import inetsoft.web.admin.schedule.IdentityChangedMessage;
 import inetsoft.web.admin.security.user.*;
 
 import java.io.*;
@@ -1426,6 +1428,8 @@ public class IdentityService {
             setOrganizationInfo((FSOrganization) identity, (EditOrganizationPaneModel) model,
                                 eprovider, principal);
          }
+
+         Cluster.getInstance().sendMessage(new IdentityChangedMessage(type, identity.getIdentityID()));
       }
       catch(Exception e) {
          actionRecord.setActionStatus(ActionRecord.ACTION_STATUS_FAILURE);
@@ -2067,15 +2071,28 @@ public class IdentityService {
          return new IdentityID(nIdentityName, norgID).convertToKey();
       }
 
-      if(type == ResourceType.SCHEDULE_TASK && changeIdentityType == Identity.USER) {
-         IdentityID oldIdentityID = new IdentityID(oIdentityName, oorgID);
-         IdentityID newIdentityID = new IdentityID(nIdentityName, norgID);
-         ScheduleTaskMetaData taskMetaData = ScheduleManager.getTaskMetaData(secondPath);
+      if(type == ResourceType.SCHEDULE_TASK) {
+         if(changeIdentityType == Identity.USER) {
+            IdentityID oldIdentityID = new IdentityID(oIdentityName, oorgID);
+            IdentityID newIdentityID = new IdentityID(nIdentityName, norgID);
+            ScheduleTaskMetaData taskMetaData = ScheduleManager.getTaskMetaData(secondPath);
 
-         if(Tool.equals(taskMetaData.getTaskOwnerId(), oldIdentityID.convertToKey())) {
-            taskMetaData.setTaskOwnerId(newIdentityID.convertToKey());
+            if(Tool.equals(taskMetaData.getTaskOwnerId(), oldIdentityID.convertToKey())) {
+               taskMetaData.setTaskOwnerId(newIdentityID.convertToKey());
 
-            return taskMetaData.getTaskId();
+               return taskMetaData.getTaskId();
+            }
+         }
+         else if(changeIdentityType == Identity.ORGANIZATION) {
+            ScheduleTaskMetaData taskMetaData = ScheduleManager.getTaskMetaData(secondPath);
+            IdentityID ownerIdentityID = IdentityID.getIdentityIDFromKey(taskMetaData.getTaskOwnerId());
+
+            if(ownerIdentityID != null && Tool.equals(ownerIdentityID.getOrgID(), oorgID)) {
+               ownerIdentityID = new IdentityID(ownerIdentityID.getName(), norgID);
+               taskMetaData.setTaskOwnerId(ownerIdentityID.convertToKey());
+
+               return taskMetaData.getTaskId();
+            }
          }
       }
 

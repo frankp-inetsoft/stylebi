@@ -85,8 +85,12 @@ export class AppComponent implements OnInit, OnDestroy {
             (message) => this.zone.run(() => this.notify(JSON.parse(message.frame.body)))));
          this.subscription.add(connection.subscribe(
             "/user/session-expiration",
-            (message) => this.zone.run(
-               () => this.showExpirationDialog(JSON.parse(message.frame.body)))));
+            (message) => {
+               const parsedMessage = JSON.parse(message.frame.body);
+               localStorage.setItem("session-expiration", JSON.stringify({data: parsedMessage, timestamp: Date.now()}));
+               this.zone.run(() => this.showExpirationDialog(parsedMessage));
+            })
+         );
          this.subscription.add(connection.subscribe(
             "/user/license-changed",
             (message) => this.zone.run(
@@ -115,6 +119,13 @@ export class AppComponent implements OnInit, OnDestroy {
          }
       }));
 
+      window.addEventListener("storage", (event) => {
+         if (event.key === "session-expiration" && event.newValue) {
+            const parsedMessage = JSON.parse(event.newValue);
+            this.zone.run(() => this.showExpirationDialog(parsedMessage.data));
+         }
+      });
+
       this.ssoHeartbeatDispatcher.dispatch();
    }
 
@@ -135,9 +146,13 @@ export class AppComponent implements OnInit, OnDestroy {
       // TODO: display a message of some kind
    }
 
-   notify(notification: any, width?: string): void {
+   notify(notification: any, width?: string, duration?: number): void {
       this.notificationMessage = notification.message;
-      this.dialog.open(this.notificationDialog, { width: !!width ? width : "350px" });
+      const dialog = this.dialog.open(this.notificationDialog, { width: !!width ? width : "350px" });
+
+      if(!!duration) {
+         setTimeout(() => { dialog.close(); }, duration);
+      }
    }
 
    private showExpirationDialog(model: SessionExpirationModel): void {
@@ -202,7 +217,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
    private showEditOrgMessage(message: any) {
       if(!!message) {
-         this.notify({message: message},  "600px");
+         this.notify({message: message},  "600px", 5000);
       }
    }
 }
