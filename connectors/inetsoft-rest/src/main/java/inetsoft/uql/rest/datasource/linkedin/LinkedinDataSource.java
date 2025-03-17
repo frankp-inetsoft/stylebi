@@ -30,6 +30,8 @@ import inetsoft.util.credential.CredentialType;
          type = ButtonType.OAUTH,
          method = "updateTokens",
          oauth = @Button.OAuth(serviceName = "linkedin"))),
+   @View1(type = ViewType.LABEL, text = "em.license.communityAPIKeyRequired", align = ViewAlign.FILL,
+      wrap = true, colspan = 2, visibleMethod ="displayAPIKeyTip"),
    @View1(value = "useCredentialId", visibleMethod = "supportToggleCredential"),
    @View1(value = "credentialId", visibleMethod = "isUseCredentialId"),
    @View1(value = "accessToken", visibleMethod = "useCredential"),
@@ -88,6 +90,11 @@ public class LinkedinDataSource extends OAuthEndpointJsonDataSource<LinkedinData
    @Override
    public void setQueryHttpParameters(HttpParameter[] parameters) {
       // no-op
+   }
+
+   @Override
+   protected boolean supportCredentialId() {
+      return false;
    }
 
    @Override
