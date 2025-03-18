@@ -56,7 +56,7 @@ Once you are satisfied with your changes and wish to contribute back to the orig
 
 The pull request will then be reviewed by our developers and accepted once they are deemed appropriate.
 
-For an example of a forked project with steps on creating a new REST data source, please see the relevant [wiki page](placeholder).
+For an example of a forked project with steps on creating a new REST data source, please see the relevant [wiki page](https://github.com/frankp-inetsoft/stylebi/wiki/Example-Contribution-(Creating-a-New-Data-Source)).
 
 ### Submitting Changes <a name="submitting"></a>
 
